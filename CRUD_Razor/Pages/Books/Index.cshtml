@@ -1,45 +1,24 @@
-﻿@page
+@page
 @model CRUD_Razor.IndexModel
-@{
-
-
-<h2>Books Management</h2>
-
-<p>
-    <a asp-page="Create" class="btn btn-primary">Add New Book</a>
-</p>
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Publisher</th>
-            <th>Status</th>
-            <th>Category</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach (var book in Model.Books)
-        {
-            <tr>
-                <td>@book.Id</td>
-                <td>@book.title</td>
-                <td>@book.author</td>
-                <td>@book.publisher</td>
-                <td>@book.status</td>
-                <td>@book.category</td>
-                <td>
-                    <a asp-page="Edit" asp-route-id="@book.Id"
-                       class="btn btn-warning btn-sm">Edit</a>
-
-                    <a asp-page="Delete" asp-route-id="@book.Id"
-                       class="btn btn-danger btn-sm">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>}
+@{ ViewData["Title"] = "All books"; }
+<div class="page-heading"><div><p class="eyebrow">THE COLLECTION</p><h1>Book register</h1><p>@Model.Books.Count book(s) shown</p></div><a asp-page="Create" class="btn btn-primary">Add book</a></div>
+<form method="get" class="search-form">
+<label for="search">Search by title or author</label>
+<div class="actions"><input id="search" name="Search" value="@Model.Search" maxlength="50" placeholder="Enter a title or author" /><button class="btn btn-primary">Search</button><a asp-page="Index" class="btn btn-secondary">Clear</a></div>
+</form>
+@if (Model.Books.Count == 0) {
+<div class="panel empty-state"><h2>No books found</h2><p>Add a book to get started, or try a different search.</p></div>
+} else {
+<div class="table-wrap"><table>
+<caption class="sr-only">Books in the register, newest first</caption>
+<thead><tr><th scope="col">Title / author</th><th scope="col">Publisher</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
+<tbody>
+@foreach (var book in Model.Books) {
+<tr><td><strong>@book.title</strong><span class="secondary-text">@book.author</span></td>
+<td>@(string.IsNullOrWhiteSpace(book.publisher) ? "—" : book.publisher)</td>
+<td>@(string.IsNullOrWhiteSpace(book.category) ? "—" : book.category)</td>
+<td><span class="badge @(book.status == "Issued" ? "issued" : "")">@book.status</span></td>
+<td class="row-actions"><a asp-page="Edit" asp-route-id="@book.Id" aria-label="Edit @book.title">Edit</a><a asp-page="Delete" asp-route-id="@book.Id" class="danger-link" aria-label="Delete @book.title">Delete</a></td></tr>
+}
+</tbody></table></div>
+}

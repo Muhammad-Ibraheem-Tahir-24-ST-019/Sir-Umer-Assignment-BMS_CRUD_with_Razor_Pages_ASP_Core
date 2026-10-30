@@ -27,7 +27,7 @@ namespace CRUD_Razor
             string query = "SELECT * FROM dbo.books WHERE Id = @Id";
 
             using SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
 
             using SqlDataReader reader = cmd.ExecuteReader();
 
@@ -59,14 +59,16 @@ namespace CRUD_Razor
             string query = "DELETE FROM dbo.books WHERE Id = @Id";
 
             using SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
 
             int rows = cmd.ExecuteNonQuery();
 
             if (rows == 0)
                 return NotFound();
 
+            TempData["SuccessMessage"] = "Book deleted.";
             return RedirectToPage("Index");
         }
     }
 }
+

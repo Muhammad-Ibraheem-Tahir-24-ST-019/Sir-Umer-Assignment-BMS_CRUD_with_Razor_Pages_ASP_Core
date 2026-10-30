@@ -1,42 +1,40 @@
-﻿@page
+@page
 @model CRUD_Razor.CreateModel
-@{
-}
+@{ ViewData["Title"] = "Add a book"; }
+<p class="eyebrow">BOOK REGISTER</p><h1>Add a book</h1>
+<p class="hint">Title, author, and status are required. Text fields allow up to 50 characters.</p>
+<form method="post" class="book-form">
+<div asp-validation-summary="All" class="text-danger" role="alert"></div>
 
-
-<h2>Add New Book</h2>
-
-<form method="post">
-    <div class="mb-3">
-        <label asp-for="Book.title" class="form-label">Title</label>
-        <input asp-for="Book.title" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Book.author" class="form-label">Author</label>
-        <input asp-for="Book.author" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Book.description" class="form-label">Description</label>
-        <input asp-for="Book.description" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Book.publisher" class="form-label">Publisher</label>
-        <input asp-for="Book.publisher" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Book.status" class="form-label">Status</label>
-        <input asp-for="Book.status" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Book.category" class="form-label">Category</label>
-        <input asp-for="Book.category" class="form-control" />
-    </div>
-
-    <button type="submit" class="btn btn-success">Save Book</button>
-    <a asp-page="Index" class="btn btn-secondary">Cancel</a>
+<div class="mb-3">
+<label asp-for="Book.title"></label>
+<input asp-for="Book.title" maxlength="50" required />
+<span asp-validation-for="Book.title" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Book.author"></label>
+<input asp-for="Book.author" maxlength="50" required />
+<span asp-validation-for="Book.author" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Book.description"></label>
+<textarea asp-for="Book.description" maxlength="50" rows="2"></textarea>
+<span asp-validation-for="Book.description" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Book.publisher"></label>
+<input asp-for="Book.publisher" maxlength="50"  />
+<span asp-validation-for="Book.publisher" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Book.status"></label>
+<select asp-for="Book.status"><option value="Available">Available</option><option value="Issued">Issued</option></select>
+<span asp-validation-for="Book.status" class="text-danger"></span>
+</div>
+<div class="mb-3">
+<label asp-for="Book.category"></label>
+<input asp-for="Book.category" maxlength="50"  />
+<span asp-validation-for="Book.category" class="text-danger"></span>
+</div>
+<div class="actions"><button type="submit" class="btn btn-primary">Save book</button><a asp-page="Index" class="btn btn-secondary">Cancel</a></div>
 </form>

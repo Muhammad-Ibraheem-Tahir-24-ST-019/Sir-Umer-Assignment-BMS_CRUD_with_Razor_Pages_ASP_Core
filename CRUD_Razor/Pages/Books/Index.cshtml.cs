@@ -16,6 +16,9 @@ namespace CRUD_Razor
 
         public List<Book> Books { get; set; } = new();
 
+        [BindProperty(SupportsGet = true)]
+        public string? Search { get; set; }
+
         public void OnGet()
         {
             string cs = _configuration
@@ -24,9 +27,17 @@ namespace CRUD_Razor
             using SqlConnection con = new SqlConnection(cs);
             con.Open();
 
-            string query = "SELECT * FROM dbo.books ORDER BY Id DESC";
+            Search = Search?.Trim();
+            if (Search?.Length > 50)
+                Search = Search[..50];
+
+            string query = @"SELECT Id, title, author, description, publisher, status, category
+                FROM dbo.books
+                WHERE @search = N'' OR CHARINDEX(@search, title) > 0 OR CHARINDEX(@search, author) > 0
+                ORDER BY Id DESC";
 
             using SqlCommand cmd = new SqlCommand(query, con);
+            cmd.Parameters.Add("@search", System.Data.SqlDbType.NVarChar, 50).Value = Search ?? "";
             using SqlDataReader reader = cmd.ExecuteReader();
 
             while (reader.Read())

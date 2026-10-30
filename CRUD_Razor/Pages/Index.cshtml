@@ -1,10 +1,14 @@
-﻿@page
-@model IndexModel
-@{
-    ViewData["Title"] = "Home page";
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Books Management System with ASP.NET Core Razor and Ms SQL</a>.</p>
-</div>
+@page
+@model CRUD_Razor.Pages.IndexModel
+@{ ViewData["Title"] = "Home"; }
+<section class="hero">
+<p class="eyebrow">BOOK MANAGEMENT SYSTEM</p>
+<h1>A simple place to<br />keep track of books.</h1>
+<p class="intro">Add titles to the register, update their details, and keep an eye on which books are available or issued.</p>
+<div class="actions"><a class="btn btn-primary" asp-page="/Books/Index">Open book register</a><a class="btn btn-secondary" asp-page="/Books/Create">Add your first book</a></div>
+</section>
+<section class="feature-grid" aria-label="Using the register">
+<article class="panel"><span class="step">01</span><h2>Add a book</h2><p>Record its title, author, publisher, category, and availability.</p></article>
+<article class="panel"><span class="step">02</span><h2>Find and update</h2><p>Search by title or author and edit details when they change.</p></article>
+<article class="panel"><span class="step">03</span><h2>Keep it tidy</h2><p>Review the book details before confirming a deletion.</p></article>
+</section>

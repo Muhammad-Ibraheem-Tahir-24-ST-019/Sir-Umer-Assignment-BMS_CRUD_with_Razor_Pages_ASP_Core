@@ -49,6 +49,8 @@ User secrets are read in the Development environment. Alternatively, set the env
 
 ## Project layout
 
+If a book page says **Database unavailable**, check that SQL Server is installed and running, the setup script has been executed, and `ConnectionStrings:DefaultConnection` points to that database. Restart the app after changing its environment variables. Book pages return HTTP 503 while the database is unavailable; the home page remains accessible.
+
 | Location | Purpose |
 | --- | --- |
 | `CRUD_Razor/Models/Book.cs` | Book fields and validation rules |

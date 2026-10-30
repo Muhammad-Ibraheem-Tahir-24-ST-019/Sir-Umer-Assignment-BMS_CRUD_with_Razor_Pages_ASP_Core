@@ -13,7 +13,24 @@
 </nav></header>
 <main id="main" class="container main-content">
 @if (TempData["SuccessMessage"] is string message) { <div class="notice" role="status">@message</div> }
-@RenderBody()
+@if (ViewData["DatabaseUnavailable"] is true)
+{
+    IgnoreBody();
+    <section class="panel database-unavailable" role="alert">
+        <p class="eyebrow">BOOK REGISTER</p>
+        <h1>Database unavailable</h1>
+        <p>The book register cannot connect to its database right now. Books cannot be loaded or saved until the connection is restored.</p>
+        <p>If you are setting up this assignment for the first time, follow the database setup steps in the project README.</p>
+        <div class="actions">
+            <a class="btn btn-primary" asp-page="/Books/Index">Try again</a>
+            <a class="btn btn-secondary" asp-page="/Index">Back to home</a>
+        </div>
+    </section>
+}
+else
+{
+    @RenderBody()
+}
 </main>
 <footer class="container">Book Management System · ASP.NET Core Razor Pages · SQL Server</footer>
 @await RenderSectionAsync("Scripts", required: false)

@@ -1,7 +1,12 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AddFolderApplicationModelConvention("/Books", model =>
+        model.Filters.Add(new Microsoft.AspNetCore.Mvc.TypeFilterAttribute(
+            typeof(CRUD_Razor.Filters.DatabaseAvailabilityFilter))));
+});
 
 
 var app = builder.Build();

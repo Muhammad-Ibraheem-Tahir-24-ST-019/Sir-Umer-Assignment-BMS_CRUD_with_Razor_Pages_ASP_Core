@@ -1,86 +1,117 @@
 # Sir Umer Assignment — Book Management System
 
-A book register for Sir Umer's ASP.NET Core Razor Pages assignment. It uses C# and SQL Server, with direct ADO.NET queries so the create, read, update, and delete operations are easy to follow.
+A book register for Sir Umer's ASP.NET Core Razor Pages assignment. It uses C# and direct ADO.NET queries for create, read, update, and delete operations.
 
-## What it does
+The original SQL Server option is retained. MySQL/MariaDB support is included for running the assignment with XAMPP.
+
+## Features
 
 - Add books with a title, author, short description, publisher, category, and status.
 - View the collection, newest entries first.
 - Search by title or author.
-- Edit book details and mark a book as **Available** or **Issued**.
+- Edit details and mark books as **Available** or **Issued**.
 - Review a book before deleting it.
-- Show validation messages and confirmation after a successful change.
+- See validation errors and confirmation messages after changes.
 
-Title and author are required. All text columns are limited to 50 characters to match the assignment schema. Status is restricted to Available or Issued.
+Title and author are required. Text fields allow up to 50 characters, matching the assignment schema. Status is restricted to Available or Issued.
 
-## Run locally
+## Run with XAMPP
 
-You need the **.NET 8 SDK** and **SQL Server** (LocalDB, Express, or another SQL Server instance). Visual Studio 2022 and SQL Server Management Studio are useful but not required.
+You need the **.NET 8 SDK** and **XAMPP with MySQL/MariaDB**.
 
-1. Clone this repository and enter its folder:
+1. Clone the repository:
 
    ```powershell
    git clone https://github.com/Muhammad-Ibraheem-Tahir-24-ST-019/Sir-Umer-Assignment-BMS_CRUD_with_Razor_Pages_ASP_Core.git
    cd Sir-Umer-Assignment-BMS_CRUD_with_Razor_Pages_ASP_Core
    ```
 
-2. Open `database/setup.sql` in SQL Server Management Studio, connect to your server, and execute it. It creates the `BooksManagement` database and `dbo.books` table. Running it again leaves existing records intact.
+2. Start **MySQL** in the XAMPP Control Panel. The ASP.NET app runs separately; it does not go in `htdocs`. Apache is only needed if you want to use phpMyAdmin.
 
-3. Set your connection string locally. For Windows LocalDB:
+3. Import `database/setup-mysql.sql` through phpMyAdmin, or run this from PowerShell:
 
    ```powershell
-   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=(localdb)\MSSQLLocalDB;Database=BooksManagement;Trusted_Connection=True;TrustServerCertificate=True" --project CRUD_Razor
+   Get-Content database/setup-mysql.sql -Raw | & C:\xampp\mysql\bin\mysql.exe -u root -h 127.0.0.1
    ```
 
-   For SQL Server Express, replace `(localdb)\MSSQLLocalDB` with your instance name, such as `.\SQLEXPRESS`. Use the same server where you ran the SQL script. The certificate setting above is for local development.
+   This creates a separate `sir_umer_books` database. Running the script again preserves existing records. If your database account has a password, use `-p` to enter it at the prompt.
 
-4. Restore, build, and start:
+4. Configure the local connection:
+
+   ```powershell
+   dotnet user-secrets set "Database:Provider" "MySql" --project CRUD_Razor
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=127.0.0.1;Port=3306;Database=sir_umer_books;User ID=root;Connection Timeout=5" --project CRUD_Razor
+   ```
+
+   This example matches a default local XAMPP account. If your installation uses another account, port, or password, use those settings instead. Keep credentials in user secrets, never in tracked files.
+
+5. Build and run:
 
    ```powershell
    dotnet restore BMS.sln
    dotnet build BMS.sln --no-restore
-   $env:ASPNETCORE_ENVIRONMENT = "Development"
-   dotnet run --project CRUD_Razor --urls http://localhost:5080
+   dotnet run --project CRUD_Razor
    ```
 
-5. Open [localhost:5080](http://localhost:5080) and choose **Open book register**.
+6. Open [the book register](http://localhost:5080/Books).
 
-User secrets are read in the Development environment. Alternatively, set the environment variable `ConnectionStrings__DefaultConnection`. Database credentials do not belong in tracked configuration files.
+The included launch profile uses port 5080 and the Development environment, which loads user secrets. Leave MySQL running while using the app.
+
+## Use SQL Server instead
+
+SQL Server remains the default provider when `Database:Provider` is not specified.
+
+1. Execute `database/setup.sql` in SQL Server Management Studio against your SQL Server instance.
+2. Set the provider and connection:
+
+   ```powershell
+   dotnet user-secrets set "Database:Provider" "SqlServer" --project CRUD_Razor
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=(localdb)\MSSQLLocalDB;Database=BooksManagement;Trusted_Connection=True;TrustServerCertificate=True" --project CRUD_Razor
+   ```
+
+3. Run `dotnet run --project CRUD_Razor`.
+
+Replace `(localdb)\MSSQLLocalDB` with your installed server name if needed. The certificate setting above is for local development.
 
 ## Project layout
-
-If a book page says **Database unavailable**, check that SQL Server is installed and running, the setup script has been executed, and `ConnectionStrings:DefaultConnection` points to that database. Restart the app after changing its environment variables. Book pages return HTTP 503 while the database is unavailable; the home page remains accessible.
 
 | Location | Purpose |
 | --- | --- |
 | `CRUD_Razor/Models/Book.cs` | Book fields and validation rules |
 | `CRUD_Razor/Pages/Books/` | CRUD pages, search, and SQL commands |
-| `CRUD_Razor/Pages/Shared/_Layout.cshtml` | Navigation and shared page layout |
+| `CRUD_Razor/Data/BookDatabase.cs` | SQL Server/MySQL connections and typed parameters |
+| `CRUD_Razor/Filters/DatabaseAvailabilityFilter.cs` | Friendly handling of missing or unavailable databases |
 | `CRUD_Razor/wwwroot/css/site.css` | Responsive styling |
-| `database/setup.sql` | Database and table setup |
+| `database/` | Separate setup scripts for each database |
+| `scripts/Test-Crud.ps1` | HTTP checks against the running app |
 
-Each page handles its own request. The form pages check model validation before writing to SQL Server. Queries use typed parameters, and Razor Pages supplies anti-forgery protection for POST forms. Edit and delete return 404 when a record no longer exists.
+Each page handles its own request. Forms check validation before writing, SQL commands use typed parameters, and Razor Pages supplies anti-forgery protection. Edit and delete return 404 when a record no longer exists.
 
-## Check the assignment
+## Verification
 
-After connecting the database:
+With the app and database running, execute the checks using **PowerShell 7**:
 
-1. Add a book and confirm it appears at the top of the register.
-2. Search using part of its title, then its author.
-3. Edit its publisher and change its status to Issued.
-4. Submit an empty title or author; the form should show an error without saving.
-5. Cancel a deletion and check that the book remains.
-6. Confirm the deletion and check that the record disappears.
-7. Reopen the deleted book's edit URL; it should return 404.
+```powershell
+pwsh -File scripts/Test-Crud.ps1
+```
 
-Build and HTTP checks passed locally, including required fields, length limits, invalid status, mismatched edit IDs, and anti-forgery rejection. Database-backed CRUD still needs to be checked against a configured SQL Server instance.
+The script creates a uniquely named temporary book, checks create/search/edit/delete, tests validation and anti-forgery handling, and removes its test record. It does not clear the collection.
 
-The project is a local classroom CRUD exercise. It does not include user accounts, borrowing history, or permissions.
+The build and all 17 HTTP checks passed against XAMPP MariaDB. SQL Server support compiles but has not been integration-tested in this environment.
+
+For a manual demonstration, add a book, search for it, change its status to Issued, and open its delete confirmation. Cancel first to confirm that viewing the page does not delete anything, then confirm the deletion.
+
+## Troubleshooting
+
+**Database unavailable:** Check that your database server is running, execute the matching setup script, and check the provider and connection string. Restart the app after changing settings. Book pages return HTTP 503 during database failures; the home page stays available.
+
+**Port 5080 is already in use:** Close the previous app process or use `dotnet run --project CRUD_Razor --urls http://localhost:5082`.
+
+This is a local classroom CRUD exercise. It does not include user accounts, borrowing history, or access permissions.
 
 ## Original assignment
 
 Based on [MuhammadUmarHayat/BMS_CRUD_with_Razor_Pages_ASP_Core](https://github.com/MuhammadUmarHayat/BMS_CRUD_with_Razor_Pages_ASP_Core). The original commit history is retained.
 
-This version adds the missing project/configuration files, a runnable database script, field validation, search, confirmation messages, and a revised layout.
-
+This version adds the missing project/configuration files, runnable database scripts, field validation, search, confirmation messages, a revised layout, and XAMPP database support.
 

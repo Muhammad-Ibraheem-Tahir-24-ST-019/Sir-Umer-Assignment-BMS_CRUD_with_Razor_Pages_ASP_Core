@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Data.SqlClient;
+
+using CRUD_Razor.Data;
+using System.Data.Common;
 
 namespace CRUD_Razor.Filters;
 
@@ -23,8 +25,8 @@ public sealed class DatabaseAvailabilityFilter(
 
         try
         {
-            var settings = new SqlConnectionStringBuilder(connectionString);
-            if (string.IsNullOrWhiteSpace(settings.DataSource))
+            using var connection = BookDatabase.CreateConnection(configuration);
+            if (string.IsNullOrWhiteSpace(connection.DataSource))
             {
                 ShowUnavailable(context);
                 return;
@@ -39,9 +41,9 @@ public sealed class DatabaseAvailabilityFilter(
         }
 
         var executed = await next();
-        if (executed.Exception is SqlException error)
+        if (executed.Exception is DbException error)
         {
-            logger.LogWarning("Book database operation failed with SQL error {Number}.", error.Number);
+            logger.LogWarning("Book database operation failed with error code {Code}.", error.ErrorCode);
             ((PageModel)context.HandlerInstance).ViewData["DatabaseUnavailable"] = true;
             executed.Result = new PageResult { StatusCode = StatusCodes.Status503ServiceUnavailable };
             executed.ExceptionHandled = true;
@@ -54,4 +56,3 @@ public sealed class DatabaseAvailabilityFilter(
         context.Result = new PageResult { StatusCode = StatusCodes.Status503ServiceUnavailable };
     }
 }
-

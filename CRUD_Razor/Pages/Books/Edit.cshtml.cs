@@ -1,7 +1,7 @@
 using CRUD_Razor.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Data.SqlClient;
+using CRUD_Razor.Data;
 
 namespace CRUD_Razor
 {
@@ -19,18 +19,15 @@ namespace CRUD_Razor
 
         public IActionResult OnGet(int id)
         {
-            string cs = _configuration
-                .GetConnectionString("DefaultConnection")!;
-
-            using SqlConnection con = new SqlConnection(cs);
+            using var con = BookDatabase.CreateConnection(_configuration);
             con.Open();
 
             string query = "SELECT * FROM dbo.books WHERE Id = @Id";
 
-            using SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
+            using var cmd = BookDatabase.CreateCommand(con, query);
+            cmd.AddParameter("@Id", System.Data.DbType.Int32, id);
 
-            using SqlDataReader reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
 
             if (!reader.Read())
                 return NotFound();
@@ -57,10 +54,7 @@ namespace CRUD_Razor
             if (!ModelState.IsValid)
                 return Page();
 
-            string cs = _configuration
-                .GetConnectionString("DefaultConnection")!;
-
-            using SqlConnection con = new SqlConnection(cs);
+            using var con = BookDatabase.CreateConnection(_configuration);
             con.Open();
 
             string query = @"
@@ -73,15 +67,15 @@ namespace CRUD_Razor
                     category = @category
                 WHERE Id = @Id";
 
-            using SqlCommand cmd = new SqlCommand(query, con);
+            using var cmd = BookDatabase.CreateCommand(con, query);
 
-            cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = Book.Id;
-            cmd.Parameters.Add("@title", System.Data.SqlDbType.NVarChar, 50).Value = (object?)Book.title?.Trim() ?? DBNull.Value;
-            cmd.Parameters.Add("@author", System.Data.SqlDbType.NVarChar, 50).Value = (object?)Book.author?.Trim() ?? DBNull.Value;
-            cmd.Parameters.Add("@description", System.Data.SqlDbType.NVarChar, 50).Value = (object?)Book.description?.Trim() ?? DBNull.Value;
-            cmd.Parameters.Add("@publisher", System.Data.SqlDbType.NVarChar, 50).Value = (object?)Book.publisher?.Trim() ?? DBNull.Value;
-            cmd.Parameters.Add("@status", System.Data.SqlDbType.NVarChar, 50).Value = (object?)Book.status?.Trim() ?? DBNull.Value;
-            cmd.Parameters.Add("@category", System.Data.SqlDbType.NVarChar, 50).Value = (object?)Book.category?.Trim() ?? DBNull.Value;
+            cmd.AddParameter("@Id", System.Data.DbType.Int32, Book.Id);
+            cmd.AddParameter("@title", System.Data.DbType.String, (object?)Book.title?.Trim() ?? DBNull.Value, 50);
+            cmd.AddParameter("@author", System.Data.DbType.String, (object?)Book.author?.Trim() ?? DBNull.Value, 50);
+            cmd.AddParameter("@description", System.Data.DbType.String, (object?)Book.description?.Trim() ?? DBNull.Value, 50);
+            cmd.AddParameter("@publisher", System.Data.DbType.String, (object?)Book.publisher?.Trim() ?? DBNull.Value, 50);
+            cmd.AddParameter("@status", System.Data.DbType.String, (object?)Book.status?.Trim() ?? DBNull.Value, 50);
+            cmd.AddParameter("@category", System.Data.DbType.String, (object?)Book.category?.Trim() ?? DBNull.Value, 50);
 
             int rows = cmd.ExecuteNonQuery();
 
@@ -93,5 +87,3 @@ namespace CRUD_Razor
         }
     }
 }
-
-

@@ -1,7 +1,7 @@
 using CRUD_Razor.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Data.SqlClient;
+using CRUD_Razor.Data;
 
 namespace CRUD_Razor
 {
@@ -18,18 +18,15 @@ namespace CRUD_Razor
 
         public IActionResult OnGet(int id)
         {
-            string cs = _configuration
-                .GetConnectionString("DefaultConnection")!;
-
-            using SqlConnection con = new SqlConnection(cs);
+            using var con = BookDatabase.CreateConnection(_configuration);
             con.Open();
 
             string query = "SELECT * FROM dbo.books WHERE Id = @Id";
 
-            using SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
+            using var cmd = BookDatabase.CreateCommand(con, query);
+            cmd.AddParameter("@Id", System.Data.DbType.Int32, id);
 
-            using SqlDataReader reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
 
             if (!reader.Read())
                 return NotFound();
@@ -50,16 +47,13 @@ namespace CRUD_Razor
 
         public IActionResult OnPost(int id)
         {
-            string cs = _configuration
-                .GetConnectionString("DefaultConnection")!;
-
-            using SqlConnection con = new SqlConnection(cs);
+            using var con = BookDatabase.CreateConnection(_configuration);
             con.Open();
 
             string query = "DELETE FROM dbo.books WHERE Id = @Id";
 
-            using SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
+            using var cmd = BookDatabase.CreateCommand(con, query);
+            cmd.AddParameter("@Id", System.Data.DbType.Int32, id);
 
             int rows = cmd.ExecuteNonQuery();
 
@@ -71,4 +65,3 @@ namespace CRUD_Razor
         }
     }
 }
-

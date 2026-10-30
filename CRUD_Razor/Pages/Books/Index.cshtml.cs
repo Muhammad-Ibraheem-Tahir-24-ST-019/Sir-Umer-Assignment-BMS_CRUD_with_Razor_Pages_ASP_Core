@@ -1,7 +1,7 @@
 using CRUD_Razor.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Data.SqlClient;
+using CRUD_Razor.Data;
 
 namespace CRUD_Razor
 {
@@ -21,10 +21,7 @@ namespace CRUD_Razor
 
         public void OnGet()
         {
-            string cs = _configuration
-                .GetConnectionString("DefaultConnection")!;
-
-            using SqlConnection con = new SqlConnection(cs);
+            using var con = BookDatabase.CreateConnection(_configuration);
             con.Open();
 
             Search = Search?.Trim();
@@ -36,9 +33,9 @@ namespace CRUD_Razor
                 WHERE @search = N'' OR CHARINDEX(@search, title) > 0 OR CHARINDEX(@search, author) > 0
                 ORDER BY Id DESC";
 
-            using SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.Add("@search", System.Data.SqlDbType.NVarChar, 50).Value = Search ?? "";
-            using SqlDataReader reader = cmd.ExecuteReader();
+            using var cmd = BookDatabase.CreateCommand(con, query);
+            cmd.AddParameter("@search", System.Data.DbType.String, Search ?? "", 50);
+            using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
